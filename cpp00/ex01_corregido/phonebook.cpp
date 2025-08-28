@@ -1,0 +1,206 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   phonebook.cpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: joserra <joserra@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/10 13:29:34 by joscastr          #+#    #+#             */
+/*   Updated: 2025/06/11 23:52:40 by joserra          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "phonebook.hpp"
+#include <iostream>
+#include <iomanip>
+
+// Convierte string numérico a entero (sin validación de errores)
+int ft_stoi(std::string str) {
+	int i = 0;
+	int n = 0;
+	while (str[i]) {
+		n = n * 10 + str[i] - '0';
+		i++;
+	}
+	return n;
+}
+
+// Valida si un string es un número
+int is_number(std::string str) {
+	if (str.empty())
+		return 0;
+	for (size_t i = 0; i < str.length(); i++) {
+		if (str[i] < '0' || str[i] > '9')
+			return 0;
+	}
+	return 1;
+}
+
+// Pide entrada de texto validando que no esté vacía
+std::string enter_info(std::string label) {
+	std::string input;
+	bool start = false;
+	std::string slen(16 - label.length(), ' ');
+
+	std::cout << label << slen << "➔ ";
+	if (!std::getline(std::cin, input))
+		return "";
+
+	while (input.length() == 0) {
+		if (start)
+			std::cout << "\033[1A\033[K";
+		start = true;
+		std::cout << "\033[1A\033[K";
+		std::cout << label << slen << "➔ ";
+		std::cout << "❌ Empty input" << std::endl;
+		std::cout << "RETRY           ➔ ";
+		if (!std::getline(std::cin, input))
+			return "";
+	}
+	if (start)
+		std::cout << "\033[1A\033[K";
+	std::cout << "\033[1A\033[K";
+	std::cout << label << slen << "➔ " << input << " ✅" << std::endl;
+
+	return input;
+}
+
+int PhoneBook::addContact() {
+	bool start = false;
+
+	if (nb_Contact == 8) {
+		std::cout << "Not enough memory\nCreating new contact will erase the oldest one" << std::endl;
+		std::cout << "Are you sure? (y/n) ➔ ";
+		std::string input;
+		if (!std::getline(std::cin, input))
+			return 0;
+
+		while (input.empty() || (input != "y" && input != "n")) {
+			if (start)
+				std::cout << "\033[1A\033[K";
+			start = true;
+			std::cout << "\033[1A\033[K";
+			std::cout << "Are you sure? (y/n) ➔ ";
+			std::cout << "❌ Wrong input" << std::endl;
+			std::cout << "RETRY           ➔ ";
+			if (!std::getline(std::cin, input))
+				return 0;
+		}
+		if (input == "n") {
+			std::cout << "Aborted" << std::endl;
+			return 0;
+		}
+		// Desplazar contactos
+		for (int i = 1; i < 8; ++i) {
+			user[i - 1] = user[i];
+			user[i - 1].setid(i - 1);
+		}
+		nb_Contact = 7;
+	}
+
+	std::string input;
+	set_homepage();
+	std::cout << "\n------ NEW CONTACT ------\n\n\n";
+
+	input = enter_info("FIRST NAME");
+	if (input == "") return -1;
+	user[nb_Contact].setFname(input);
+
+	input = enter_info("LAST NAME");
+	if (input == "") return -1;
+	user[nb_Contact].setLname(input);
+
+	input = enter_info("NICKNAME");
+	if (input == "") return -1;
+	user[nb_Contact].setNname(input);
+
+	// Validar número
+	std::cout << "NUMBER          ➔ ";
+	if (!std::getline(std::cin, input))
+		return -1;
+
+	while (input.length() < 5 || input.length() > 10 || !is_number(input)) {
+		if (start)
+			std::cout << "\033[1A\033[K";
+		start = true;
+		std::cout << "\033[1A\033[K";
+		std::cout << "Error: Phone number must be between 5 ~ 10 digits long" << std::endl;
+		std::cout << "NUMBER          ➔ ";
+		if (!std::getline(std::cin, input))
+			return -1;
+	}
+	if (start)
+		std::cout << "\033[1A\033[K";
+	std::cout << "\033[1A\033[K";
+	std::cout << "NUMBER          ➔ " << input << " ✅" << std::endl;
+
+	user[nb_Contact].setnumber(input);
+
+	input = enter_info("DARKEST SECRET");
+	if (input == "") return -1;
+	user[nb_Contact].setsecrets(input);
+
+	user[nb_Contact].setid(nb_Contact);
+	nb_Contact++;
+
+	std::cout << "\nCONTACT ADDED ✅\n" << std::endl;
+	return 1;
+}
+
+int PhoneBook::searchContact() {
+	if (nb_Contact == 0) {
+		std::cout << "Error: No Contact in memory" << std::endl;
+		return -1;
+	}
+	set_homepage();
+
+	std::cout << "\n ___________________________________________\n";
+	std::cout << "|                                           |\n";
+	std::cout << "|  Index   |First Name| Last Name| Nickname |\n";
+	std::cout << "|                                           |";
+
+	for (int i = 0; i < nb_Contact; ++i) {
+		std::cout << "\n|";
+		std::cout << std::setw(10) << user[i].get_id() + 1 << "|";
+		print_Contact(user[i].get_fname());
+		std::cout << "|";
+		print_Contact(user[i].get_lname());
+		std::cout << "|";
+		print_Contact(user[i].get_nname());
+		std::cout << "|";
+	}
+	std::cout << "\n|___________________________________________|\n";
+
+	std::string input;
+	std::cout << "\nQuick search (type index): ";
+	if (!std::getline(std::cin, input))
+		return 0;
+	std::cout << std::endl;
+
+	while (!is_number(input) || ft_stoi(input) > nb_Contact || ft_stoi(input) < 1) {
+		if (!is_number(input))
+			std::cout << "\nError: Not a number\nQuick search (type index): ";
+		else
+			std::cout << "\nError: Index does not exist\nQuick search (type index): ";
+		if (!std::getline(std::cin, input))
+			return 0;
+	}
+	set_homepage();
+	showContact(ft_stoi(input) - 1);
+	return 0;
+}
+
+int PhoneBook::showContact(int index) {
+	std::cout << "\nContact " << index + 1 << " :\n" << std::endl;
+	std::cout << "FIRST_NAME     = " << user[index].get_fname() << std::endl;
+	std::cout << "LAST_NAME      = " << user[index].get_lname() << std::endl;
+	std::cout << "NICKNAME       = " << user[index].get_nname() << std::endl;
+	std::cout << "NUMBER         = " << user[index].get_pnumber() << std::endl;
+	std::cout << "DARKEST_SECRET = " << user[index].get_secrets() << std::endl;
+	std::cout << std::endl;
+	return 0;
+}
+
+PhoneBook::PhoneBook() {
+	nb_Contact = 0;
+}

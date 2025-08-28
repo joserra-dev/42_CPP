@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+project(PhoneBook)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Archivos fuente
+add_executable(phonebook
+    main.cpp
+    phonebook.cpp
+)
+
+# Archivos de encabezado (opcional para el IDE)
+target_include_directories(phonebook PRIVATE ${CMAKE_SOURCE_DIR})
+

@@ -1,0 +1,6 @@
+while true
+do
+	clear
+	c++ *.cpp
+	./a.out > mine.log
+done
