@@ -1,0 +1,17 @@
+*.o
+*.out
+*.a
+
+*.supp
+*.dSYM
+
+*.log
+*.txt
+
+/.vscode/
+.DS_Store
+
+clapTrap
+scavTrap
+fragTrap
+diamondTrap
